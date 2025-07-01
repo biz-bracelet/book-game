@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Runner - 첫 화면</title>
+    <style>
+        body {
+            background-color: #121212;
+            color: #e0e0e0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 40px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        button {
+            background-color: #FF6F00; /* 주황색 */
+            border: none;
+            color: white;
+            padding: 12px 24px;
+            font-size: 1.1em;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 6px rgba(255, 111, 0, 0.6);
+        }
+        button:hover {
+            background-color: #e65c00;
+        }
+        h1 {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>AI Runner</h1>
+    <form action="/files" method="get">
+        <button type="submit">시나리오 고르기</button>
+    </form>
+</body>
+</html>

@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>프로필</title>
+  <style>
+    body {
+      background-color: #121212;
+      color: #eee;
+      font-family: 'Segoe UI', sans-serif;
+      margin: 40px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #loading {
+      font-size: 1.2em;
+      color: #aaa;
+      margin-top: 100px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .spinner {
+      width: 24px;
+      height: 24px;
+      border: 4px solid #444;
+      border-top: 4px solid #FF6F00;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+      0%   { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #profile-container {
+      display: none;
+      flex-direction: row;
+      gap: 40px;
+      align-items: flex-start;
+      margin-top: 60px;
+    }
+
+    #profile-image {
+      width: 220px;
+      height: 220px;
+      object-fit: cover;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(255,111,0,0.7);
+    }
+
+    #info-box {
+      max-width: 500px;
+      text-align: left;
+    }
+
+    #select-image-button {
+      margin-top: 20px;
+      padding: 10px 24px;
+      font-size: 1em;
+      background-color: #FF6F00;
+      color: white;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+    }
+
+    #select-image-button:hover {
+      background-color: #e65c00;
+    }
+
+    #popup-overlay,
+    #ai-popup-overlay {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0,0,0,0.6);
+      justify-content: center;
+      align-items: center;
+      z-index: 1000;
+    }
+
+    #popup, #ai-popup {
+      position: relative;
+      background: #1e1e1e;
+      padding: 30px 40px;
+      border-radius: 10px;
+      box-shadow: 0 0 15px rgba(255,111,0,0.7);
+      text-align: center;
+    }
+
+    #popup h2 {
+      margin-bottom: 20px;
+      color: #fff;
+    }
+
+    .popup-button {
+      padding: 10px 20px;
+      margin: 0 10px;
+      background-color: #FF6F00;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .popup-button:hover {
+      background-color: #e65c00;
+    }
+
+    .popup-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 24px;
+      font-weight: bold;
+      color: #fff;
+      cursor: pointer;
+    }
+
+    .popup-close:hover {
+      color: #FF6F00;
+    }
+
+    #start-button-wrapper {
+      margin-top: 50px;
+      text-align: center;
+      display: none;
+    }
+
+    #start-button {
+      margin-top: 20px; 
+      padding: 14px 36px;
+      font-size: 1.1em;
+      background-color: #FF6F00;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+    }
+
+    #start-button:hover {
+      background-color: #e65c00;
+    }
+
+    #ai-popup {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    #ai-loading {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    #ai-images {
+      display: none;
+      margin-top: 20px;
+      gap: 12px;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    #ai-images img {
+      width: 160px;
+      height: 160px;
+      object-fit: cover;
+      border-radius: 8px;
+      box-shadow: 0 0 8px rgba(255,111,0,0.4);
+      cursor: pointer;
+      margin: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="spinner"></div>
+    프로필을 불러오는 중입니다...
+  </div>
+
+  <div id="profile-container">
+    <div style="display: flex; flex-direction: column; align-items: center;">
+      <img id="profile-image" src="/resource/person.png" alt="프로필 이미지" />
+      <button id="select-image-button">이미지 선택</button>
+    </div>
+    <div id="info-box"></div>
+  </div>
+
+  <div id="popup-overlay">
+    <div id="popup">
+      <div class="popup-close" onclick="closePopup()">×</div>
+      <h2>이미지 선택</h2>
+      <p style="font-size: 0.9em; color: #ccc; margin: -10px 0 20px;">**AI 이미지 생성은 시간이 다소 걸릴 수 있습니다.**</p>
+      <button class="popup-button" onclick="onUploadClick()">직접 업로드</button>
+      <button class="popup-button" onclick="onGenerateClick()">AI로 생성</button>
+    </div>
+  </div>
+
+  <div id="ai-popup-overlay">
+    <div id="ai-popup">
+      <div class="popup-close" onclick="closePopup()">×</div>
+      <div id="ai-loading">
+        <div class="spinner"></div>
+        <span>이미지를 생성 중입니다...</span>
+      </div>
+      <div id="ai-images"></div>
+    </div>
+  </div>
+
+  <input type="file" id="file-input" accept=".png,.jpg,.jpeg" style="display:none" />
+
+  <button id="start-button" style="display:none;">게임 시작</button>
+
+  <script>
+    const loadingDiv = document.getElementById("loading");
+    const profileContainer = document.getElementById("profile-container");
+    const infoBox = document.getElementById("info-box");
+    const profileImage = document.getElementById("profile-image");
+    const startButton = document.getElementById("start-button");
+    const popupOverlay = document.getElementById("popup-overlay");
+    const fileInput = document.getElementById("file-input");
+    const aiPopupOverlay = document.getElementById("ai-popup-overlay");
+    const aiLoading = document.getElementById("ai-loading");
+    const aiImages = document.getElementById("ai-images");
+    const summary = sessionStorage.getItem('summary');
+    const title = sessionStorage.getItem('title');
+
+    let characterLoaded = false;
+    let gameData = null;
+
+    if (!summary || !title) {
+      window.location.href = "/";
+    } else {
+      document.title = `${title} - 프로필`;
+    }
+    
+    function showProfileIfReady() {
+      if (characterLoaded) {
+        loadingDiv.style.display = "none";
+        profileContainer.style.display = "flex";
+        startButton.style.display = "block";
+      }
+    }
+
+    async function loadCharacter() {
+      try {
+        const res = await fetch("/profile_data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ summary: summary }),
+        });
+        
+        if (!res.ok) throw new Error("요약 요청 실패");
+
+        const data = await res.json();
+        gameData = gameData || {};
+        gameData.character_info = data.character_info;
+        gameData.character_summary = data.character_summary;
+
+        const info = data.character_info;
+        if (!info || info.error) {
+          infoBox.innerHTML = `<p style="color:#f66;">⚠️ 오류가 발생했습니다: 프로필 데이터를 불러올 수 없습니다.</p>`;
+        } else {
+          infoBox.innerHTML = `
+            <h2 style="margin-bottom:18px;">캐릭터 프로필</h2>
+            <p><strong>이름:</strong> ${info.name || "?"}</p>
+            <p><strong>나이:</strong> ${info.age || "?"}</p>
+            <p><strong>성별:</strong> ${info.gender || "?"}</p>
+            <p><strong>성격:</strong><br>${info.personality || ""}</p>
+            <p><strong>배경:</strong><br>${info.background || ""}</p>
+          `;
+        }
+
+        characterLoaded = true;
+        showProfileIfReady();
+      } catch (e) {
+        loadingDiv.innerHTML = `<div class="spinner"></div>⚠️ 오류가 발생했습니다.`;
+        console.error(e);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCharacter();
+      gameData = gameData || {};
+      gameData.full_summary = summary;
+
+      if (!summary) throw new Error("summary 누락");
+      showProfileIfReady();
+    });
+
+    document.getElementById("select-image-button").addEventListener("click", () => {
+      popupOverlay.style.display = "flex";
+    });
+
+    window.onUploadClick = function () {
+      popupOverlay.style.display = "none";
+      fileInput.click();
+    };
+
+    window.onGenerateClick = async function () {
+      popupOverlay.style.display = "none";
+      aiPopupOverlay.style.display = "flex";
+      aiLoading.style.display = "flex";
+      aiImages.style.display = "none";
+      aiImages.innerHTML = "";
+
+      try {
+        const summary = gameData.character_summary;
+        if (!summary) throw new Error("character_summary가 비어 있습니다.");
+
+        const imgRes = await fetch("/profile_image_generate", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ character_summary: summary }),
+        });
+
+        const imgData = await imgRes.json();
+
+        if (imgData.error) throw new Error(imgData.error);
+        if (!imgData.images || !Array.isArray(imgData.images))
+          throw new Error("이미지를 받지 못했습니다.");
+
+        aiLoading.style.display = "none";
+        aiImages.style.display = "flex";
+
+        aiImages.innerHTML = imgData.images
+          .map(
+            (base64Str) =>
+              `<img src="data:image/png;base64,${base64Str}" style="width:220px; height:220px; border-radius:8px; cursor:pointer;" onclick="selectGeneratedImage('data:image/png;base64,${base64Str}')">`
+          )
+          .join("");
+      } catch (err) {
+        aiImages.innerHTML = `<p style="color:#f66;">⚠️ ${err.message}</p>`;
+        aiLoading.style.display = "none";
+        aiImages.style.display = "block";
+        console.error("이미지 생성 오류:", err);
+      }
+    };
+
+    window.closePopup = function () {
+      popupOverlay.style.display = "none";
+      aiPopupOverlay.style.display = "none";
+    };
+
+    fileInput.addEventListener("change", () => {
+      const file = fileInput.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        profileImage.src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    });
+
+    window.selectGeneratedImage = function (imageSrc) {
+      profileImage.src = imageSrc;
+      aiPopupOverlay.style.display = "none";
+    };
+
+    startButton.addEventListener("click", () => {
+      sessionStorage.setItem("selectedImage", profileImage.src);
+      sessionStorage.setItem("gameData", JSON.stringify(gameData));
+      sessionStorage.setItem("title", title);
+      window.location.href = "/game";
+    });
+  </script>
+</body>
+</html>

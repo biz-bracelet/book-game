@@ -1,0 +1,440 @@
+<!doctype html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>AI Runner</title>
+    <style>
+        body {
+            margin: 0; padding: 0; height: 100vh;
+            display: flex; flex-direction: column;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #121212;
+            color: #e0e0e0;
+        }
+        header {
+            padding: 16px 24px;
+            background-color: #1f1f1f;
+            font-size: 1.3em;
+            border-bottom: 2px solid #FF6F00;
+            flex-shrink: 0;
+        }
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: row;
+            overflow: hidden;
+        }
+        .chat {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            background-color: #1a1a1a;
+        }
+        .chat-messages {
+            position: relative;
+            flex: 1;
+            overflow-y: auto;
+            margin: 10px 20px 0 20px;
+            border: 1px solid #333;
+            padding: 10px;
+            border-radius: 6px;
+            background-color: #111;
+
+            background-image: url('/resource/page.jpg');
+            background-size: cover;
+            background-repeat: no-repeat;
+            background-position: center;
+        }
+        .chat-log {
+            position: relative;
+        }
+        .chat-log::before {
+            content: "";
+            position: absolute;
+            top: -20px;
+            bottom: -30px;
+            left: -20px;
+            right: -20px;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 0;
+            pointer-events: none;
+        }
+        .chat-message {
+            position: relative;
+            z-index: 2;
+            margin-bottom: 12px;
+            white-space: pre-line;
+            word-break: break-word;
+        }
+        .chat-message.user {
+            color: #FF6F00;
+            text-align: right;
+            z-index: 2;
+        }
+        .chat-message.bot {
+            color: #ccc;
+            text-align: left;
+            z-index: 2;
+        }
+        form {
+            display: flex;
+            padding: 10px 20px 20px 20px;
+            background-color: #1a1a1a;
+            border-top: 1px solid #333;
+            align-items: flex-end;
+            gap: 10px;
+        }
+        textarea {
+            flex: 1;
+            padding: 10px 12px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            box-sizing: border-box;
+            resize: none;
+            overflow-y: hidden;
+            line-height: 1.6em;
+            min-height: 2.6em;
+            max-height: 200px;
+            background-color: #222;
+            color: #e0e0e0;
+            transition: box-shadow 0.2s;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+            word-break: break-word;
+            white-space: pre-line;
+        }
+        #char-count {
+            position: absolute;
+            bottom: 6px;
+            right: 12px;
+            font-size: 0.75em;
+            color: #888;
+            pointer-events: none;
+        }
+        button {
+            background-color: #FF6F00;
+            border: none;
+            padding: 10px 16px;
+            cursor: pointer;
+            border-radius: 8px;
+            color: white;
+            font-size: 1em;
+            transition: background-color 0.3s ease;
+        }
+        button:hover:enabled {
+            background-color: #e65c00;
+        }
+        button:disabled {
+            background-color: #444;
+            cursor: not-allowed;
+        }
+        a.back {
+            display: block;
+            margin: 12px 24px;
+            color: #888;
+            text-decoration: none;
+            flex-shrink: 0;
+        }
+        a.back:hover {
+            color: #FF6F00;
+        }
+        .input-wrapper {
+            position: relative;
+            flex: 1;
+        }
+        #chat-form {
+            display: flex;
+            align-items: flex-end;
+            gap: 10px;
+        }
+
+        #character-preview {
+            position: relative;
+            width: 100px;
+            height: 100px;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 0 8px rgba(255,111,0,0.6);
+        }
+
+        #character-preview img {
+            position: absolute;
+            top: 0; left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            display: block;
+        }
+
+        #frame-overlay {
+            pointer-events: none;
+            z-index: 2;
+        }
+
+    </style>
+</head>
+<body>
+    <header>
+        {{ title }}
+    </header>
+    <main>
+        <section class="chat">
+            <div class="chat-messages" id="chat-messages">
+                <div class="chat-bg-overlay" id="chat-bg-overlay"></div>
+                <div class="chat-log" id="chat-log"></div>
+                {% for role, msg in messages %}
+                    <div class="chat-message {{ 'user' if role=='User' else 'bot' }}">
+                        {% if role == 'User' %}
+                            <strong>당신:</strong>
+                            <span class="msg-content">{{ msg | replace('\n', '<br>') | safe }}</span>
+                        {% else %}
+                            <span class="msg-content">{{ msg | replace('\n', '<br>') | safe }}</span>
+                        {% endif %}
+                    </div>
+                {% endfor %}
+                </div>
+            </div>
+            <form id="chat-form" method="post" autocomplete="off">
+                <!-- 이미지 컨테이너를 맨 앞에 배치 -->
+                <div id="character-preview">
+                    <img id="char-img" src="" alt="캐릭터 이미지" />
+                    <img id="frame-overlay" src="/resource/frame_s_04.png" alt="프레임" />
+                </div>
+
+                <div class="input-wrapper">
+                    <textarea
+                        id="message"
+                        name="message"
+                        placeholder="메시지를 입력하세요..."
+                        rows="1"
+                        required
+                        style="width: 100%;"
+                    ></textarea>
+                    <div id="char-count">0 / 140</div>
+                </div>
+                
+                <button type="submit" id="send-btn" disabled>전송</button>
+            </form>
+
+
+        </section>
+    </main>
+    <a href="{{ url_for('list_files') }}" class="back">← 파일 목록으로 돌아가기</a>
+
+<script>
+    const textarea = document.getElementById('message');
+    const chatForm = document.getElementById('chat-form');
+    const chatLog       = document.getElementById('chat-log');
+    const chatContainer = document.getElementById('chat-messages');
+    const sendBtn = document.getElementById('send-btn');
+    const charCount = document.getElementById('char-count');
+    const gameData = JSON.parse(sessionStorage.getItem("gameData"));
+    const title = sessionStorage.getItem('title');
+    const MAX_LENGTH = 140;
+
+    let isSubmitting = false;
+    let isGameStart = true;
+    let episodeChanged = false;
+
+    console.log("gameData :", gameData);
+
+    function escapeHtml(text) {
+        return text
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#039;");
+    }
+
+    function formatMessage(msg) {
+        return escapeHtml(msg)
+            .replace(/\n{2,}/g, match => '<br>'.repeat(match.length) + '<br style="margin-bottom:0.5em;">')
+            .replace(/\n/g, '<br>');
+    }
+
+    function updateTextareaHeight() {
+        textarea.style.height = 'auto';
+        textarea.style.height = textarea.scrollHeight + 'px';
+    }
+    
+    textarea.addEventListener('input', () => {
+        const length = textarea.value.length;
+        charCount.textContent = `${length} / ${MAX_LENGTH}`;
+        sendBtn.disabled = length === 0 || length > MAX_LENGTH;
+        charCount.style.color = length > MAX_LENGTH ? '#ff4444' : '#888';
+        updateTextareaHeight();
+    });
+
+    chatForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const userMessage = textarea.value;
+        if (!userMessage || userMessage.length > MAX_LENGTH) return;
+
+        sendGameStart(userMessage);
+    });
+
+
+    textarea.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            if (!sendBtn.disabled) sendBtn.click();
+        }
+    });
+
+    window.addEventListener('DOMContentLoaded', () => {
+        updateTextareaHeight();
+        sendBtn.disabled = true;
+        isGameStart = true;
+        sendGameStart();
+    });
+
+    const charImg = document.getElementById('char-img');
+    const selectedImage = sessionStorage.getItem('selectedImage');
+    if (selectedImage && charImg) {
+        charImg.src = selectedImage;
+    } else {
+        charImg.style.display = 'none'; // 없으면 감춤
+    }
+    
+    const newSessionId = generateUUID();
+    sessionStorage.setItem("sessionId", newSessionId);
+    console.log("세션 ID를 새로 생성:", newSessionId);
+    const sessionId = newSessionId;
+
+    function generateUUID() {
+        return ([1e7]+-1e3+-4e3+-8e3+-1e11)
+            .replace(/[018]/g, c =>
+                (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
+            );
+    }
+
+    // 페이지 로드 시 자동으로 "게임 시작" 메시지 전송
+    async function sendGameStart(userMessage) {
+
+        let body;
+
+        if (isSubmitting) return; // 이미 제출 중이면 무시
+        isSubmitting = true;  // 제출 상태 시작
+
+        if (isGameStart) {
+            isGameStart = false;
+            chatLog.innerHTML = '';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            body = { 
+                message: "게임 시작", 
+                summary: gameData.full_summary,
+                sessionId: sessionId}
+        } else {
+            // 사용자 메시지 출력
+            const userDiv = document.createElement('div');
+            userDiv.className = 'chat-message user';
+            userDiv.innerHTML = `<strong>당신:</strong> <span class="msg-content">${formatMessage(userMessage)}</span>`;
+            chatLog.appendChild(userDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            body = { 
+                message: userMessage,
+                sessionId: sessionId}
+        }
+
+        // 입력창 초기화 및 버튼 비활성화
+        textarea.value = '';
+        charCount.textContent = '0 / 140';
+        charCount.style.color = '#888';
+        sendBtn.disabled = true;
+        updateTextareaHeight();
+
+        // 서버에 스트림 요청
+        const response = await fetch('/chat/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+
+        if (!response.body) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'chat-message bot';
+            errorDiv.textContent = "[오류] 서버가 스트림을 지원하지 않습니다.";
+            chatLog.appendChild(errorDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            sendBtn.disabled = false; // 응답 실패 시도 복구
+            return;
+        }
+
+        // 스트림 처리
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+        let botDiv = document.createElement('div');
+        botDiv.className = 'chat-message bot';
+        let botContentSpan = document.createElement('span');
+        botContentSpan.className = 'msg-content';
+        botDiv.appendChild(botContentSpan);
+        chatLog.appendChild(botDiv);
+
+        let botResponse = "";
+
+        // 줄바꿈을 이쁘게 처리: 연속 줄바꿈은 <br><br>로, 단일 줄바꿈은 <br>로 변환
+        function prettyFormatMessage(msg) {
+            // 3개 이상 연속 줄바꿈은 <br><br>로, 2개는 <br><br>, 1개는 <br>
+            return escapeHtml(msg)
+                .replace(/\n{3,}/g, '<br><br>')
+                .replace(/\n{2}/g, '<br><br>')
+                .replace(/\n/g, '<br>');
+        }
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            let chunk = decoder.decode(value);
+            chunk = chunk.replace(/^data:\s*/gm, '');
+            if (chunk === "" || chunk === "[DONE]") continue;
+
+            botResponse += chunk;
+            if (botResponse.includes("[NEW_PLACE]")) {
+                episodeChanged = true;
+                botResponse = botResponse.replace(/\[NEW_PLACE\]/g, "");
+            }
+            botContentSpan.innerHTML = prettyFormatMessage(botResponse) + '<span style="opacity:0.7;">▌</span>';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 최종 출력 및 커서 제거
+        botContentSpan.innerHTML = prettyFormatMessage(botResponse);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        if (episodeChanged) {
+            (async () => {
+                try {
+                    const imgRes = await fetch("/background_generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ place: botResponse }),
+                    });
+
+                    const imgData = await imgRes.json();
+
+                    if (imgData.error) throw new Error(imgData.error);
+                    if (!imgData.images || !Array.isArray(imgData.images)) {
+                        throw new Error("이미지를 받지 못했습니다.");
+                    }
+                    
+                    const bgOverlay = document.getElementById("chat-messages");
+                    bgOverlay.style.backgroundImage = `url('data:image/png;base64,${imgData.images[0]}')`;
+
+                    episodeChanged = false;
+                } catch (err) {
+                    console.error("배경 이미지 생성 오류:", err.message);
+                }
+            })();
+        }
+        sendBtn.disabled = false;
+        isSubmitting = false;
+        textarea.focus();
+    }
+</script>
+
+</body>
+</html>
