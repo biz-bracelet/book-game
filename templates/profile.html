@@ -39,10 +39,24 @@
 
     #profile-container {
       display: none;
+      margin-top: 60px;
+      width: 100%;
+      max-width: 960px;
+    }
+
+    .profile-layout {
+      display: flex;
       flex-direction: row;
       gap: 40px;
       align-items: flex-start;
-      margin-top: 60px;
+      flex-wrap: wrap;
+    }
+
+    .image-column {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      flex-shrink: 0;
     }
 
     #profile-image {
@@ -51,11 +65,6 @@
       object-fit: cover;
       border-radius: 12px;
       box-shadow: 0 0 12px rgba(255,111,0,0.7);
-    }
-
-    #info-box {
-      max-width: 500px;
-      text-align: left;
     }
 
     #select-image-button {
@@ -71,6 +80,11 @@
 
     #select-image-button:hover {
       background-color: #e65c00;
+    }
+
+    #info-box {
+      flex: 1;
+      max-width: 500px;
     }
 
     #popup-overlay,
@@ -94,9 +108,18 @@
       text-align: center;
     }
 
-    #popup h2 {
-      margin-bottom: 20px;
+    .popup-close {
+      position: absolute;
+      top: 12px;
+      right: 16px;
+      font-size: 24px;
+      font-weight: bold;
       color: #fff;
+      cursor: pointer;
+    }
+
+    .popup-close:hover {
+      color: #FF6F00;
     }
 
     .popup-button {
@@ -113,28 +136,8 @@
       background-color: #e65c00;
     }
 
-    .popup-close {
-      position: absolute;
-      top: 12px;
-      right: 16px;
-      font-size: 24px;
-      font-weight: bold;
-      color: #fff;
-      cursor: pointer;
-    }
-
-    .popup-close:hover {
-      color: #FF6F00;
-    }
-
-    #start-button-wrapper {
-      margin-top: 50px;
-      text-align: center;
-      display: none;
-    }
-
     #start-button {
-      margin-top: 20px; 
+      margin-top: 50px;
       padding: 14px 36px;
       font-size: 1.1em;
       background-color: #FF6F00;
@@ -142,6 +145,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      display: none;
     }
 
     #start-button:hover {
@@ -177,6 +181,23 @@
       cursor: pointer;
       margin: 10px;
     }
+
+    @media (max-width: 768px) {
+      .profile-layout {
+        flex-direction: column;
+        align-items: center;
+        text-align: center;
+      }
+
+      #info-box {
+        max-width: 100%;
+      }
+
+      #start-button {
+        width: 100%;
+        max-width: 300px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -186,11 +207,13 @@
   </div>
 
   <div id="profile-container">
-    <div style="display: flex; flex-direction: column; align-items: center;">
-      <img id="profile-image" src="/resource/person.png" alt="프로필 이미지" />
-      <button id="select-image-button">이미지 선택</button>
+    <div class="profile-layout">
+      <div class="image-column">
+        <img id="profile-image" src="/resource/person.png" alt="프로필 이미지" />
+        <button id="select-image-button">이미지 선택</button>
+      </div>
+      <div id="info-box"></div>
     </div>
-    <div id="info-box"></div>
   </div>
 
   <div id="popup-overlay">
@@ -215,8 +238,7 @@
   </div>
 
   <input type="file" id="file-input" accept=".png,.jpg,.jpeg" style="display:none" />
-
-  <button id="start-button" style="display:none;">게임 시작</button>
+  <button id="start-button">게임 시작</button>
 
   <script>
     const loadingDiv = document.getElementById("loading");
@@ -240,11 +262,11 @@
     } else {
       document.title = `${title} - 프로필`;
     }
-    
+
     function showProfileIfReady() {
       if (characterLoaded) {
         loadingDiv.style.display = "none";
-        profileContainer.style.display = "flex";
+        profileContainer.style.display = "block";
         startButton.style.display = "block";
       }
     }
@@ -256,7 +278,7 @@
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ summary: summary }),
         });
-        
+
         if (!res.ok) throw new Error("요약 요청 실패");
 
         const data = await res.json();

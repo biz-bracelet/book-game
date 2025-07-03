@@ -41,7 +41,7 @@
             border-radius: 6px;
             background-color: #111;
 
-            background-image: url('/resource/page.jpg');
+            background-image: linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)),  url('/resource/page.jpg');
             background-size: cover;
             background-repeat: no-repeat;
             background-position: center;
@@ -56,7 +56,7 @@
             bottom: -30px;
             left: -20px;
             right: -20px;
-            background-color: rgba(0, 0, 0, 0.7);
+            {#background-color: rgba(0, 0, 0, 0.7);#}
             z-index: 0;
             pointer-events: none;
         }
@@ -181,7 +181,7 @@
     <main>
         <section class="chat">
             <div class="chat-messages" id="chat-messages">
-                <div class="chat-bg-overlay" id="chat-bg-overlay"></div>
+{#                <div class="chat-bg-overlay" id="chat-bg-overlay">ㅇㅇㅇㅇㅇ</div>#}
                 <div class="chat-log" id="chat-log"></div>
                 {% for role, msg in messages %}
                     <div class="chat-message {{ 'user' if role=='User' else 'bot' }}">
@@ -213,7 +213,7 @@
                     ></textarea>
                     <div id="char-count">0 / 140</div>
                 </div>
-                
+
                 <button type="submit" id="send-btn" disabled>전송</button>
             </form>
 
@@ -258,7 +258,7 @@
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
     }
-    
+
     textarea.addEventListener('input', () => {
         const length = textarea.value.length;
         charCount.textContent = `${length} / ${MAX_LENGTH}`;
@@ -298,7 +298,7 @@
     } else {
         charImg.style.display = 'none'; // 없으면 감춤
     }
-    
+
     const newSessionId = generateUUID();
     sessionStorage.setItem("sessionId", newSessionId);
     console.log("세션 ID를 새로 생성:", newSessionId);
@@ -323,8 +323,8 @@
             isGameStart = false;
             chatLog.innerHTML = '';
             chatContainer.scrollTop = chatContainer.scrollHeight;
-            body = { 
-                message: "게임 시작", 
+            body = {
+                message: "게임 시작",
                 summary: gameData.full_summary,
                 sessionId: sessionId}
         } else {
@@ -334,7 +334,7 @@
             userDiv.innerHTML = `<strong>당신:</strong> <span class="msg-content">${formatMessage(userMessage)}</span>`;
             chatLog.appendChild(userDiv);
             chatContainer.scrollTop = chatContainer.scrollHeight;
-            body = { 
+            body = {
                 message: userMessage,
                 sessionId: sessionId}
         }
@@ -420,9 +420,9 @@
                     if (!imgData.images || !Array.isArray(imgData.images)) {
                         throw new Error("이미지를 받지 못했습니다.");
                     }
-                    
+
                     const bgOverlay = document.getElementById("chat-messages");
-                    bgOverlay.style.backgroundImage = `url('data:image/png;base64,${imgData.images[0]}')`;
+                    bgOverlay.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('data:image/png;base64,${imgData.images[0]}')`;
 
                     episodeChanged = false;
                 } catch (err) {
