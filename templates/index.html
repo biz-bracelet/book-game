@@ -1,42 +1,53 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Runner - 첫 화면</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
-        button {
-            background-color: #FF6F00; /* 주황색 */
-            border: none;
-            color: white;
-            padding: 12px 24px;
-            font-size: 1.1em;
-            border-radius: 8px;
-            cursor: pointer;
-            transition: background-color 0.3s ease;
-            box-shadow: 0 2px 6px rgba(255, 111, 0, 0.6);
-        }
-        button:hover {
-            background-color: #e65c00;
-        }
-        h1 {
-            margin-bottom: 30px;
-        }
-    </style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter:Me</title>
+  <link rel="stylesheet" href="../static/assets/css/ui.css">
 </head>
 <body>
-    <h1>AI Runner</h1>
-    <form action="/files" method="get">
-        <button type="submit">시나리오 고르기</button>
-    </form>
+  <!-- header -->
+  <header>
+    <h1>
+      <img src="../static/assets/images/logo.png" alt="">
+      <span>AI Runner</span>
+    </h1>
+  </header>
+  <!-- //header -->
+
+  <!-- main -->
+  <main class="intro">
+    <div class="txt1">
+      <span>Chapter <em>: Me</em></span><br>
+      이야기의 <strong>주인공</strong>은 이제 <strong>당신</strong>
+    </div>
+    <div class="txt2">
+      글이 끝나는 곳에서, 당신의 서사가 시작됩니다.
+    </div>
+    <div class="btn">
+      <button type="button" class="start">Start</button>
+    </div>
+  </main>
+  <!-- //main -->
+
+  <!-- video layer -->
+  <div class="video_layer hide">
+    <video>
+      <source src="../static/assets/video/ai_runner_sound.mp4" type="video/mp4" />
+    </video>
+    <div class="txt_area">
+      <div class="txt1">
+        <span>Chapter <em>: Me</em></span><br>
+        이야기의 <strong>주인공</strong>은 이제 <strong>당신</strong>
+      </div>
+      <div class="txt2">
+        글이 끝나는 곳에서, 당신의 서사가 시작됩니다.
+      </div>
+    </div>
+  </div>
+
+
+  <script src="../static/assets/js/ui.js"></script>
 </body>
 </html>

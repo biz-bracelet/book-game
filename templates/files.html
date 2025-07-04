@@ -37,10 +37,15 @@
             background-color: #222;
             transition: transform 0.2s ease;
             flex-shrink: 0; /* 크기 줄어들지 않도록 */
+            z-index: 1; /* 기본값 */
         }
         .card:hover {
-            transform: scale(1.05);
+            transform: scale(1.2);
             box-shadow: 0 8px 20px rgba(255,111,0,0.7);
+            border-style: solid;
+            border-width: 5px;
+            border-color: #ff5532;
+            z-index: 10; /* ✅ 앞으로 띄움 */
         }
 
         /* 표지 이미지 */
@@ -54,6 +59,31 @@
         }
         .card:hover img {
             filter: brightness(60%);
+        }
+
+        .top-label {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%); /* 정확히 가운데 정렬 */
+
+            color: white;
+            font-weight: bold;
+            font-size: 1em;
+            z-index: 2;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 1.2em;
+            line-height: 1.2em;
+            white-space: nowrap;
+        }
+        .card:hover .top-label {
+            opacity: 1;
         }
 
         /* 제목 오버레이 */
@@ -72,7 +102,7 @@
             transition: opacity 0.3s ease;
             white-space: normal;
             line-height: 1.2em;
-            height: 3.6em; /* 최대 3줄 */
+            height: 25px; /* 최대 3줄 */
             overflow: hidden;
             text-align: center;
             border-bottom-left-radius: 12px;
@@ -213,6 +243,7 @@
         {% for file in files %}
             <div class="card" title="{{ titles.get(file, file) }}" onclick="selectBook('{{ file }}', '{{ titles.get(file, file) }}')">
                 <img src="/resource/books/{{ file.rsplit('.', 1)[0] }}.jpg" alt="{{ titles.get(file, file) }}">
+                <div class="top-label">{{ titles.get(file, file) }}</div>
                 <div class="title-overlay">{{ titles.get(file, file) }}</div>
             </div>
         {% else %}

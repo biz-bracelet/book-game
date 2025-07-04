@@ -16,7 +16,7 @@
             padding: 16px 24px;
             background-color: #1f1f1f;
             font-size: 1.3em;
-            border-bottom: 2px solid #FF6F00;
+            border-bottom: 2px solid #ff5532;
             flex-shrink: 0;
         }
         main {
@@ -68,7 +68,7 @@
             word-break: break-word;
         }
         .chat-message.user {
-            color: #FF6F00;
+            color: #ff5532;
             text-align: right;
             z-index: 2;
         }
@@ -113,7 +113,7 @@
             pointer-events: none;
         }
         button {
-            background-color: #FF6F00;
+            background-color: #ff5532;
             border: none;
             padding: 10px 16px;
             cursor: pointer;
@@ -123,7 +123,7 @@
             transition: background-color 0.3s ease;
         }
         button:hover:enabled {
-            background-color: #e65c00;
+            background-color: #ff5532;
         }
         button:disabled {
             background-color: #444;
@@ -137,7 +137,7 @@
             flex-shrink: 0;
         }
         a.back:hover {
-            color: #FF6F00;
+            color: #ff5532;
         }
         .input-wrapper {
             position: relative;
@@ -263,7 +263,7 @@
         const length = textarea.value.length;
         charCount.textContent = `${length} / ${MAX_LENGTH}`;
         sendBtn.disabled = length === 0 || length > MAX_LENGTH;
-        charCount.style.color = length > MAX_LENGTH ? '#ff4444' : '#888';
+        charCount.style.color = length > MAX_LENGTH ? '#ff5532' : '#888';
         updateTextareaHeight();
     });
 
