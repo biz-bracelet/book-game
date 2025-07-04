@@ -242,7 +242,7 @@
     <div class="card-container">
         {% for item in items %}
             <div class="card" title="{{ item.title }}" onclick="location.href='/profile?bookId={{ item.bookId }}'">
-                <img src="/resource/books/{{ item.bookId }}.jpg" alt="{{ item.plotSummary }}">
+                <img src="{{ item.cover_image_url }}" alt="{{ item.plotSummary }}">
                 <div class="title-overlay">{{ item.title }}</div>
             </div>
         {% else %}

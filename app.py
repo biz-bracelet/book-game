@@ -13,6 +13,7 @@ import boto3
 from boto3 import client
 from boto3.dynamodb.conditions import Key
 import logging
+from botocore.exceptions import ClientError # 예외 처리용
 
 app = Flask(__name__)
 config = Config(read_timeout=120, connect_timeout=10)
@@ -28,6 +29,8 @@ s3_client = boto3.client('s3')
 dynamodb_resource = boto3.resource('dynamodb')
 BOOK_META_DATA_TABLE_NAME = 'BookMetaDataTable'
 book_meta_data_table = dynamodb_resource.Table(BOOK_META_DATA_TABLE_NAME)
+SOURCE_BUCKET_NAME = os.getenv('S3_SOURCE_BUCKET_NAME', 'your-default-book-covers-bucket')
+BOOK_COVERS_FOLDER_PREFIX = 'book-covers/'
 
 BOOK_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'books')
 FILE_TITLES = json.load(open("books/titles.json", encoding="utf-8"))
@@ -48,6 +51,21 @@ def list_files():
             )
         logging.info("DynamoDB response:", response)
         items = response['Items']
+
+        # 각 항목에 대한 이미지 URL 생성
+        for item in items:
+            book_id = item.get('bookId') 
+
+            if book_id:
+                # 이미지 파일명 규칙: bookId.jpg (예: golden_goose.jpg)
+                # S3 키는 폴더 접두사와 파일명을 결합합니다.
+                image_key = f"{BOOK_COVERS_FOLDER_PREFIX}{book_id}.jpg"
+                item['cover_image_url'] = get_s3_image_url(SOURCE_BUCKET_NAME, image_key)
+            else:
+                # bookId가 없는 경우 대체 이미지 URL
+                logging.error("❌ S3 URL 생성 오류")
+                item['cover_image_url'] = get_s3_image_url(SOURCE_BUCKET_NAME, f"{BOOK_COVERS_FOLDER_PREFIX}default_cover.jpg")
+
     except Exception:
         items = []
         logging.error("DynamoDB query failed", exc_info=True)
@@ -126,6 +144,27 @@ def chat_stream():
             traceback.print_exc()
 
     return Response(stream_with_context(stream_response()), content_type='text/plain')
+
+def get_s3_image_url(bucket_name, image_key):
+    """
+    S3 객체에 대한 미리 서명된(pre-signed) URL을 생성합니다.
+    """
+    try:
+        s3_client.head_object(Bucket=bucket_name, Key=image_key)
+        response = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': image_key},
+            ExpiresIn=604800 # <-- 유효시간 7일(604800초)로 설정
+        )
+    except ClientError as e:
+        logger.error(f"❌ S3 URL 생성 오류: {e}")
+        response = s3_client.generate_presigned_url(
+            'get_object',
+            Params={'Bucket': bucket_name, 'Key': f"{BOOK_COVERS_FOLDER_PREFIX}default_cover.jpg"},
+            ExpiresIn=604800 # <-- 유효시간 7일(604800초)로 설정
+        )
+
+    return response
 
 def read_file_content(filepath):
     ext = os.path.splitext(filepath)[1].lower()
