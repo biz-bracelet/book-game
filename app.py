@@ -9,7 +9,10 @@ from flask import (
     Flask, render_template, request, send_from_directory,
     jsonify, stream_with_context, Response, abort
 )
+import boto3
 from boto3 import client
+from boto3.dynamodb.conditions import Key
+import logging
 
 app = Flask(__name__)
 config = Config(read_timeout=120, connect_timeout=10)
@@ -20,18 +23,35 @@ bedrock = client(
     config=config
 )
 
+# --- AWS 설정 ---
+s3_client = boto3.client('s3')
+dynamodb_resource = boto3.resource('dynamodb')
+BOOK_META_DATA_TABLE_NAME = 'BookMetaDataTable'
+book_meta_data_table = dynamodb_resource.Table(BOOK_META_DATA_TABLE_NAME)
+
 BOOK_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'books')
 FILE_TITLES = json.load(open("books/titles.json", encoding="utf-8"))
 session_histories = {}
 
+# 로그 생성
+logger = logging.getLogger()
+
+# 로그의 출력 기준 설정
+logger.setLevel(logging.INFO)
+
 @app.route("/files")
 def list_files():
     try:
-        files = os.listdir(BOOK_FOLDER)
-        doc_files = [f for f in files if f.lower().endswith(('.txt', '.pdf', '.docx'))]
+        response = book_meta_data_table.query(
+            IndexName='status-index',  # GSI 이름 지정
+            KeyConditionExpression=Key('status').eq('PROCESSED')
+            )
+        logging.info("DynamoDB response:", response)
+        items = response['Items']
     except Exception:
-        doc_files = []
-    return render_template("files.html", files=doc_files, titles=FILE_TITLES)
+        items = []
+        logging.error("DynamoDB query failed", exc_info=True)
+    return render_template("files.html", items=items)
 
 SUMMARY_FOLDER = os.path.join(os.path.dirname(__file__), 'summary')
 
@@ -57,7 +77,30 @@ def home():
 
 @app.route("/profile")
 def profile():
-    return render_template("profile.html")
+    bookId = request.args.get('bookId')
+
+    if not bookId:
+        return render_template("profile.html", character_summary=None, character_info=None, title=None, full_summary=None, bookId=bookId)
+
+    try:
+        future = book_meta_data_table.get_item(Key={'bookId': bookId})
+        
+        character_summary_for_view = future.get("Item", {}).get('protagonist_for_view', {})
+        character_summary = future.get("Item", {}).get('protagonist', {})
+        character_info = character_summary.get('summary', '')
+        title = future.get("Item", {}).get('title', 'Unknown Title')
+        full_summary = convert_book_metadata_to_structured_text(future.get("Item", {}))
+
+    except Exception:
+        print("❌ Error in /profile:", traceback.format_exc())
+        character_summary = None
+        character_info = None
+
+    return render_template("profile.html", character_summary=character_summary_for_view, character_info=character_info, title=title, full_summary=full_summary, bookId=bookId)    
+
+@app.route("/profileByNewStory")
+def profileByNewStory():
+    return render_template("profileByNewStory.html")
 
 @app.route("/game")
 def game():
@@ -389,6 +432,63 @@ avoid any violent or sensitive terms.
     result = json.loads(response['body'].read())
     return result.get("images", [])
 
+def convert_book_metadata_to_structured_text(book_details_dict):
+    structured_text_parts = []
+
+    # 1. Protagonist
+    structured_text_parts.append("## 1. Protagonist\n")
+    protagonist = book_details_dict.get("protagonist", {})
+    if protagonist:
+        structured_text_parts.append(f"**Name:** {protagonist.get('name', '')}\n")
+        structured_text_parts.append(f"**Age:** {protagonist.get('age', '')}\n")
+        structured_text_parts.append(f"**Gender:** {protagonist.get('gender', '')}\n")
+        structured_text_parts.append(f"**Appearance:** {protagonist.get('appearance', '')}\n")
+        structured_text_parts.append(f"**Personality:** {protagonist.get('personality', '')}\n")
+        structured_text_parts.append(f"**Background:** {protagonist.get('background', '')}\n")
+        structured_text_parts.append(f"**Summary (Concise):** {protagonist.get('summary', '')}\n")
+    else:
+        structured_text_parts.append("No protagonist details found.\n") # 값이 아예 없을 때 명시
+    structured_text_parts.append("\n")
+
+    # 2. Worldbuilding
+    structured_text_parts.append("## 2. Worldbuilding\n")
+    worldbuilding_text = book_details_dict.get("worldbuilding", '')
+    structured_text_parts.append(f"{worldbuilding_text}\n")
+    structured_text_parts.append("\n")
+
+    # 3. Temporal/Spatial Setting
+    structured_text_parts.append("## 3. Temporal/Spatial Setting\n")
+    temporal_spatial_setting_text = book_details_dict.get("temporalSpatialSetting", '')
+    structured_text_parts.append(f"{temporal_spatial_setting_text}\n")
+    structured_text_parts.append("\n")
+
+    # 4. Plot Summary
+    structured_text_parts.append("## 4. Plot Summary\n")
+    plot_summary_text = book_details_dict.get("plotSummary", '')
+    structured_text_parts.append(f"{plot_summary_text}\n")
+    structured_text_parts.append("\n")
+
+    # 5. Key Events
+    structured_text_parts.append("## 5. Key Events\n")
+    key_events = book_details_dict.get("keyEvents", [])
+    if key_events:
+        for event in key_events:
+            episode_num = event.get('episode_num', '')
+            event_summary = event.get('event_summary', '')
+            # 에피소드 번호가 없으면 "Episode : " 대신 공백 처리
+            episode_prefix = f"**Episode {episode_num}:** " if episode_num else ""
+            structured_text_parts.append(f"{episode_prefix}{event_summary}\n")
+    else:
+        structured_text_parts.append("No key events found.\n")
+    structured_text_parts.append("\n")
+
+    # 6. Ending Summary
+    structured_text_parts.append("## 6. Ending Summary\n")
+    ending_summary_text = book_details_dict.get("endingSummary", '')
+    structured_text_parts.append(f"{ending_summary_text}\n")
+    structured_text_parts.append("\n")
+
+    return "".join(structured_text_parts).strip()
 
 @app.route("/profile_data", methods=["POST"])
 def profile_data():
@@ -435,11 +535,11 @@ def summary():
 def profile_image_generate():
     try:
         data = request.get_json()
-        character_summary = data.get("character_summary")
-        if not character_summary:
-            return jsonify({"error": "character_summary가 제공되지 않았습니다."}), 400
+        character_info = data.get("character_info")
+        if not character_info:
+            return jsonify({"error": "character_info 제공되지 않았습니다."}), 400
 
-        images = create_character_image(character_summary)
+        images = create_character_image(character_info)
         return jsonify({"images": images})
     except Exception:
         print("❌ Error in /profile_image_generate:", traceback.format_exc())
