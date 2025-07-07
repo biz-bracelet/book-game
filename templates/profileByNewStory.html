@@ -38,7 +38,7 @@
     }
 
     #profile-container {
-      display: flex;
+      display: none;
       margin-top: 60px;
       width: 100%;
       max-width: 960px;
@@ -145,6 +145,7 @@
       border: none;
       border-radius: 10px;
       cursor: pointer;
+      display: none;
     }
 
     #start-button:hover {
@@ -200,6 +201,11 @@
   </style>
 </head>
 <body>
+  <div id="loading">
+    <div class="spinner"></div>
+    프로필을 불러오는 중입니다...
+  </div>
+
   <div id="profile-container">
     <div class="profile-layout">
       <div class="image-column">
@@ -207,18 +213,6 @@
         <button id="select-image-button">이미지 선택</button>
       </div>
       <div id="info-box"></div>
-    </div>
-    <div id="info-box">
-      {% if character_summary %}
-      <h2 style="margin-bottom:18px;">캐릭터 프로필</h2>
-      <p><strong>이름:</strong> {{ character_summary.name | default('?') }}</p>    
-      <p><strong>나이:</strong> {{ character_summary.age | default('?') }}</p>
-      <p><strong>성별:</strong> {{ character_summary.gender | default('?') }}</p>
-      <p><strong>성격:</strong><br>{{ character_summary.personality | default('') }}</p>
-      <p><strong>배경:</strong><br>{{ character_summary.background | default('') }}</p>
-      {% else %}
-      <p style="color:#f66;">⚠️ 오류가 발생했습니다: 프로필 데이터를 불러올 수 없습니다.</p>
-      {% endif %}
     </div>
   </div>
 
@@ -247,17 +241,81 @@
   <button id="start-button">게임 시작</button>
 
   <script>
-    const fileInput = document.getElementById("file-input");
-    const startButton = document.getElementById("start-button");
+    const loadingDiv = document.getElementById("loading");
+    const profileContainer = document.getElementById("profile-container");
+    const infoBox = document.getElementById("info-box");
     const profileImage = document.getElementById("profile-image");
+    const startButton = document.getElementById("start-button");
     const popupOverlay = document.getElementById("popup-overlay");
+    const fileInput = document.getElementById("file-input");
     const aiPopupOverlay = document.getElementById("ai-popup-overlay");
     const aiLoading = document.getElementById("ai-loading");
     const aiImages = document.getElementById("ai-images");
+    const summary = sessionStorage.getItem('summary');
+    const title = sessionStorage.getItem('title');
 
-    const character_info = {{ character_info | tojson | safe }};
-    const full_summary = {{ full_summary | tojson | safe }};
-    const title = {{ title | tojson | safe }};
+    let characterLoaded = false;
+    let gameData = null;
+
+    if (!summary || !title) {
+      window.location.href = "/";
+    } else {
+      document.title = `${title} - 프로필`;
+    }
+
+    function showProfileIfReady() {
+      if (characterLoaded) {
+        loadingDiv.style.display = "none";
+        profileContainer.style.display = "block";
+        startButton.style.display = "block";
+      }
+    }
+
+    async function loadCharacter() {
+      try {
+        const res = await fetch("/profile_data", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ summary: summary }),
+        });
+
+        if (!res.ok) throw new Error("요약 요청 실패");
+
+        const data = await res.json();
+        gameData = gameData || {};
+        gameData.character_info = data.character_info;
+        gameData.character_summary = data.character_summary;
+
+        const info = data.character_info;
+        if (!info || info.error) {
+          infoBox.innerHTML = `<p style="color:#f66;">⚠️ 오류가 발생했습니다: 프로필 데이터를 불러올 수 없습니다.</p>`;
+        } else {
+          infoBox.innerHTML = `
+            <h2 style="margin-bottom:18px;">캐릭터 프로필</h2>
+            <p><strong>이름:</strong> ${info.name || "?"}</p>
+            <p><strong>나이:</strong> ${info.age || "?"}</p>
+            <p><strong>성별:</strong> ${info.gender || "?"}</p>
+            <p><strong>성격:</strong><br>${info.personality || ""}</p>
+            <p><strong>배경:</strong><br>${info.background || ""}</p>
+          `;
+        }
+
+        characterLoaded = true;
+        showProfileIfReady();
+      } catch (e) {
+        loadingDiv.innerHTML = `<div class="spinner"></div>⚠️ 오류가 발생했습니다.`;
+        console.error(e);
+      }
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      loadCharacter();
+      gameData = gameData || {};
+      gameData.full_summary = summary;
+
+      if (!summary) throw new Error("summary 누락");
+      showProfileIfReady();
+    });
 
     document.getElementById("select-image-button").addEventListener("click", () => {
       popupOverlay.style.display = "flex";
@@ -275,13 +333,14 @@
       aiImages.style.display = "none";
       aiImages.innerHTML = "";
 
-      console.log(character_info);
-
       try {
+        const summary = gameData.character_summary;
+        if (!summary) throw new Error("character_summary가 비어 있습니다.");
+
         const imgRes = await fetch("/profile_image_generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ character_info: character_info }),
+          body: JSON.stringify({ character_summary: summary }),
         });
 
         const imgData = await imgRes.json();
@@ -330,10 +389,6 @@
 
     startButton.addEventListener("click", () => {
       sessionStorage.setItem("selectedImage", profileImage.src);
-      // 2. gameData 객체 생성 및 sessionStorage에 저장
-      const gameData = {
-            full_summary: full_summary
-        };
       sessionStorage.setItem("gameData", JSON.stringify(gameData));
       sessionStorage.setItem("title", title);
       window.location.href = "/game";

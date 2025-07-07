@@ -240,11 +240,10 @@
     <h1>이야기를 선택하세요</h1>
 
     <div class="card-container">
-        {% for file in files %}
-            <div class="card" title="{{ titles.get(file, file) }}" onclick="selectBook('{{ file }}', '{{ titles.get(file, file) }}')">
-                <img src="/resource/books/{{ file.rsplit('.', 1)[0] }}.jpg" alt="{{ titles.get(file, file) }}">
-                <div class="top-label">{{ titles.get(file, file) }}</div>
-                <div class="title-overlay">{{ titles.get(file, file) }}</div>
+        {% for item in items %}
+            <div class="card" title="{{ item.title }}" onclick="location.href='/profile?bookId={{ item.bookId }}'">
+                <img src="{{ item.cover_image_url }}" alt="{{ item.plotSummary }}">
+                <div class="title-overlay">{{ item.title }}</div>
             </div>
         {% else %}
             <p style="text-align:center; width: 100%;">파일이 없습니다.</p>
@@ -288,24 +287,6 @@
             document.getElementById('filePopup').style.display = 'none';
         }
 
-        function selectBook(filename, title) {
-            // summary 폴더에서 summary 텍스트 읽어오기
-            fetch(`/summary/{{ '' }}${filename}`) // GET 방식
-                .then(response => response.json())
-                .then(data => {
-                    if (data.full_summary) {
-                        sessionStorage.setItem('summary', data.full_summary);
-                        sessionStorage.setItem('title', title);
-                        window.location.href = "/profile";
-                    } else {
-                        alert("요약 파일을 불러오지 못했습니다.");
-                    }
-                })
-                .catch(err => {
-                    alert("서버 연결에 문제가 있습니다.");
-                });
-        }
-
         function selectFile() {
             if (!textarea.value.trim()) {
                 alert('제목을 입력해주세요.');
@@ -337,7 +318,7 @@
                     if (data.full_summary) {
                         sessionStorage.setItem('summary', data.full_summary);
                         sessionStorage.setItem('title', textarea.value);
-                        window.location.href = "/profile";
+                        window.location.href = "/profileByNewStory";
                     } else {
                         alert("서머리 추출 중 오류 발생");
                     }
