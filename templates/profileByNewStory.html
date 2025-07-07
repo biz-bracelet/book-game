@@ -7,16 +7,43 @@
   <link rel="stylesheet" href="../static/assets/css/ui.css">
   <style>
     body {
-      background-color: #121212;
       color: #eee;
       font-family: 'Segoe UI', sans-serif;
       flex-direction: column;
       align-items: center;
     }
 
-    #profile-div{
-        margin: 40px;
+   .blur-bg {
+          position: fixed;
+          top: 0;
+          left: 0;
+          width: 100vw;
+          height: 100vh;
+          background-image: url('../static/assets/images/bg_intro.jpg');
+          background-size: cover;
+          background-position: center;
+          filter: blur(3x); /* 블러 정도 조절 가능 */
+          z-index: -1; /* 배경 뒤로 보내기 */
     }
+    .blur-bg::after {
+      content: '';
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.4);  /* 어두운 효과 */
+    }
+
+    #profile-div{
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: calc(100vh - 60px); /* 상단바 높이만큼 뺀 화면 높이 */
+        position: relative;
+        z-index: 1;
+    }
+
     #loading {
       font-size: 1.2em;
       color: #aaa;
@@ -40,11 +67,15 @@
       100% { transform: rotate(360deg); }
     }
 
-    #profile-container {
-      display: none;
-      margin-top: 60px;
+   #profile-container {
+      display: flex;
       width: 100%;
       max-width: 960px;
+      justify-content: center;
+      background-color: rgba(0, 0, 0, 0.5); /* 검정색 + 50% 투명도 */
+      border-radius: 20px;                 /* 모서리 둥글게 */
+      padding: 50px;                       /* 안쪽 여백 */
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3); /* 살짝 그림자 */
     }
 
     .profile-layout {
@@ -218,12 +249,13 @@
     </h1>
     <a href="/" class="home">첫 화면으로 돌아가기</a>
   </header>
-  <div id="loading">
+
+<div class="blur-bg"></div> <!-- 블러 배경용 레이어 -->
+<div id = "profile-div">
+    <div id="loading">
     <div class="spinner"></div>
     프로필을 불러오는 중입니다...
   </div>
-
-<div id = "profile-div">
   <div id="profile-container">
     <div class="profile-layout">
       <div class="image-column">
@@ -238,6 +270,7 @@
     <div id="popup">
       <div class="popup-close" onclick="closePopup()">×</div>
       <h2>이미지 선택</h2>
+        <br>
       <p style="font-size: 0.9em; color: #ccc; margin: -10px 0 20px;">**AI 이미지 생성은 시간이 다소 걸릴 수 있습니다.**</p>
       <button class="popup-button" onclick="onUploadClick()">직접 업로드</button>
       <button class="popup-button" onclick="onGenerateClick()">AI로 생성</button>
