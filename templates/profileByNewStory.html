@@ -2,18 +2,21 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>프로필</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter:Me</title>
+  <link rel="stylesheet" href="../static/assets/css/ui.css">
   <style>
     body {
       background-color: #121212;
       color: #eee;
       font-family: 'Segoe UI', sans-serif;
-      margin: 40px;
-      display: flex;
       flex-direction: column;
       align-items: center;
     }
 
+    #profile-div{
+        margin: 40px;
+    }
     #loading {
       font-size: 1.2em;
       color: #aaa;
@@ -136,8 +139,14 @@
       background-color: #e65c00;
     }
 
+    .start-button-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
     #start-button {
-      margin-top: 50px;
       padding: 14px 36px;
       font-size: 1.1em;
       background-color: #ff5532;
@@ -199,13 +208,22 @@
       }
     }
   </style>
+
 </head>
 <body>
+<header>
+    <h1>
+      <img src="../static/assets/images/logo.png" alt="">
+      <span>AI Runner</span>
+    </h1>
+    <a href="/" class="home">첫 화면으로 돌아가기</a>
+  </header>
   <div id="loading">
     <div class="spinner"></div>
     프로필을 불러오는 중입니다...
   </div>
 
+<div id = "profile-div">
   <div id="profile-container">
     <div class="profile-layout">
       <div class="image-column">
@@ -238,8 +256,10 @@
   </div>
 
   <input type="file" id="file-input" accept=".png,.jpg,.jpeg" style="display:none" />
-  <button id="start-button">게임 시작</button>
-
+  <div class="start-button-container">
+    <button id="start-button">게임 시작</button>
+  </div>
+</div>
   <script>
     const loadingDiv = document.getElementById("loading");
     const profileContainer = document.getElementById("profile-container");

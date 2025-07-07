@@ -2,18 +2,20 @@
 <html lang="ko">
 <head>
   <meta charset="UTF-8" />
-  <title>프로필</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Chapter:Me</title>
+  <link rel="stylesheet" href="../static/assets/css/ui.css">
   <style>
     body {
       background-color: #121212;
       color: #eee;
       font-family: 'Segoe UI', sans-serif;
-      margin: 40px;
-      display: flex;
       flex-direction: column;
       align-items: center;
     }
-
+    #profile-div{
+            margin: 40px;
+    }
     #loading {
       font-size: 1.2em;
       color: #aaa;
@@ -33,7 +35,7 @@
     }
 
     @keyframes spin {
-      0%   { transform: rotate(0deg); }
+      0% { transform: rotate(0deg); }
       100% { transform: rotate(360deg); }
     }
 
@@ -42,6 +44,7 @@
       margin-top: 60px;
       width: 100%;
       max-width: 960px;
+      justify-content: center;
     }
 
     .profile-layout {
@@ -49,7 +52,6 @@
       flex-direction: row;
       gap: 40px;
       align-items: flex-start;
-      flex-wrap: wrap;
     }
 
     .image-column {
@@ -136,8 +138,15 @@
       background-color: #e65c00;
     }
 
+    .start-button-container {
+      width: 100%;
+      display: flex;
+      justify-content: center;
+      margin-top: 60px;
+    }
+
+
     #start-button {
-      margin-top: 50px;
       padding: 14px 36px;
       font-size: 1.1em;
       background-color: #ff5532;
@@ -190,6 +199,7 @@
 
       #info-box {
         max-width: 100%;
+        margin-top: 24px;
       }
 
       #start-button {
@@ -200,52 +210,64 @@
   </style>
 </head>
 <body>
-  <div id="profile-container">
-    <div class="profile-layout">
-      <div class="image-column">
-        <img id="profile-image" src="/resource/person.png" alt="프로필 이미지" />
-        <button id="select-image-button">이미지 선택</button>
+  <header>
+    <h1>
+      <img src="../static/assets/images/logo.png" alt="">
+      <span>AI Runner</span>
+    </h1>
+    <a href="/" class="home">첫 화면으로 돌아가기</a>
+  </header>
+
+  <div id = "profile-div">
+      <div id="profile-container">
+        <div class="profile-layout">
+          <div class="image-column">
+            <img id="profile-image" src="/resource/person.png" alt="프로필 이미지" />
+            <button id="select-image-button">이미지 선택</button>
+          </div>
+          <div id="info-box">
+            {% if character_summary %}
+            <h2 style="margin-bottom:18px;">캐릭터 프로필</h2>
+            <p><strong>이름:</strong> {{ character_summary.name | default('?') }}</p>
+            <p><strong>나이:</strong> {{ character_summary.age | default('?') }}</p>
+            <p><strong>성별:</strong> {{ character_summary.gender | default('?') }}</p>
+            <p><strong>성격:</strong><br>{{ character_summary.personality | default('') }}</p>
+            <p><strong>배경:</strong><br>{{ character_summary.background | default('') }}</p>
+            {% else %}
+            <p style="color:#f66;">⚠️ 오류가 발생했습니다: 프로필 데이터를 불러올 수 없습니다.</p>
+            {% endif %}
+          </div>
+        </div>
       </div>
-      <div id="info-box"></div>
-    </div>
-    <div id="info-box">
-      {% if character_summary %}
-      <h2 style="margin-bottom:18px;">캐릭터 프로필</h2>
-      <p><strong>이름:</strong> {{ character_summary.name | default('?') }}</p>    
-      <p><strong>나이:</strong> {{ character_summary.age | default('?') }}</p>
-      <p><strong>성별:</strong> {{ character_summary.gender | default('?') }}</p>
-      <p><strong>성격:</strong><br>{{ character_summary.personality | default('') }}</p>
-      <p><strong>배경:</strong><br>{{ character_summary.background | default('') }}</p>
-      {% else %}
-      <p style="color:#f66;">⚠️ 오류가 발생했습니다: 프로필 데이터를 불러올 수 없습니다.</p>
-      {% endif %}
-    </div>
-  </div>
 
-  <div id="popup-overlay">
-    <div id="popup">
-      <div class="popup-close" onclick="closePopup()">×</div>
-      <h2>이미지 선택</h2>
-      <p style="font-size: 0.9em; color: #ccc; margin: -10px 0 20px;">**AI 이미지 생성은 시간이 다소 걸릴 수 있습니다.**</p>
-      <button class="popup-button" onclick="onUploadClick()">직접 업로드</button>
-      <button class="popup-button" onclick="onGenerateClick()">AI로 생성</button>
-    </div>
-  </div>
-
-  <div id="ai-popup-overlay">
-    <div id="ai-popup">
-      <div class="popup-close" onclick="closePopup()">×</div>
-      <div id="ai-loading">
-        <div class="spinner"></div>
-        <span>이미지를 생성 중입니다...</span>
+      <div id="popup-overlay">
+        <div id="popup">
+          <div class="popup-close" onclick="closePopup()">×</div>
+          <h2>이미지 선택</h2>
+            <br>
+          <p style="font-size: 0.9em; color: #ccc; margin: -10px 0 20px;">**AI 이미지 생성은 시간이 다소 걸릴 수 있습니다.**</p>
+          <button class="popup-button" onclick="onUploadClick()">직접 업로드</button>
+          <button class="popup-button" onclick="onGenerateClick()">AI로 생성</button>
+        </div>
       </div>
-      <div id="ai-images"></div>
+
+      <div id="ai-popup-overlay">
+        <div id="ai-popup">
+          <div class="popup-close" onclick="closePopup()">×</div>
+          <div id="ai-loading">
+            <div class="spinner"></div>
+            <span>이미지를 생성 중입니다...</span>
+          </div>
+          <div id="ai-images"></div>
+        </div>
+      </div>
+
+      <input type="file" id="file-input" accept=".png,.jpg,.jpeg" style="display:none" />
+    {#  <button id="start-button">게임 시작</button>#}
+    <div class="start-button-container">
+      <button id="start-button">게임 시작</button>
     </div>
   </div>
-
-  <input type="file" id="file-input" accept=".png,.jpg,.jpeg" style="display:none" />
-  <button id="start-button">게임 시작</button>
-
   <script>
     const fileInput = document.getElementById("file-input");
     const startButton = document.getElementById("start-button");
@@ -274,8 +296,6 @@
       aiLoading.style.display = "flex";
       aiImages.style.display = "none";
       aiImages.innerHTML = "";
-
-      console.log(character_info);
 
       try {
         const imgRes = await fetch("/profile_image_generate", {

@@ -1,140 +1,12 @@
 <!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Runner - 파일 목록</title>
-    <style>
-        body {
-            background-color: #121212;
-            color: #e0e0e0;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 40px;
-        }
-        h1 {
-            margin-bottom: 20px;
-            text-align: center;
-        }
-
-        /* 카드 컨테이너 - flex-wrap 으로 여러 줄 배치 */
-        .card-container {
-            display: flex;
-            flex-wrap: wrap; /* 여러 줄 배치 */
-            gap: 16px;
-            justify-content: center; /* 가운데 정렬 */
-            max-width: 100%;
-        }
-
-        /* 카드 개별 */
-        .card {
-            position: relative;
-            width: 180px;
-            height: 260px;
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(255,111,0,0.4);
-            cursor: pointer;
-            overflow: hidden;
-            background-color: #222;
-            transition: transform 0.2s ease;
-            flex-shrink: 0; /* 크기 줄어들지 않도록 */
-            z-index: 1; /* 기본값 */
-        }
-        .card:hover {
-            transform: scale(1.2);
-            box-shadow: 0 8px 20px rgba(255,111,0,0.7);
-            border-style: solid;
-            border-width: 5px;
-            border-color: #ff5532;
-            z-index: 10; /* ✅ 앞으로 띄움 */
-        }
-
-        /* 표지 이미지 */
-        .card img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-            border-radius: 12px;
-            transition: filter 0.3s ease;
-        }
-        .card:hover img {
-            filter: brightness(60%);
-        }
-
-        .top-label {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%); /* 정확히 가운데 정렬 */
-
-            color: white;
-            font-weight: bold;
-            font-size: 1em;
-            z-index: 2;
-            pointer-events: none;
-            opacity: 0;
-            transition: opacity 0.3s ease;
-
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 1.2em;
-            line-height: 1.2em;
-            white-space: nowrap;
-        }
-        .card:hover .top-label {
-            opacity: 1;
-        }
-
-        /* 제목 오버레이 */
-        .title-overlay {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            padding: 12px 10px;
-            background: rgba(0, 0, 0, 0.7);
-            color: #FF6F00;
-            font-weight: 600;
-            font-size: 1em;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-            white-space: normal;
-            line-height: 1.2em;
-            height: 25px; /* 최대 3줄 */
-            overflow: hidden;
-            text-align: center;
-            border-bottom-left-radius: 12px;
-            border-bottom-right-radius: 12px;
-        }
-        .card:hover .title-overlay {
-            opacity: 1;
-            pointer-events: auto;
-        }
-
-        /* 모바일 화면 대응 */
-        @media (max-width: 400px) {
-            .card {
-                width: 140px;
-                height: 210px;
-            }
-        }
-
-        /* 뒤로가기 링크 스타일 */
-        .back-link {
-            display: block;
-            text-align: center;
-            margin-top: 20px;
-            color: #888;
-            text-decoration: none;
-            font-size: 0.9em;
-        }
-        .back-link:hover {
-            color: #FF6F00;
-        }
-
-        /* 레이어 팝업 스타일 */
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter:Me</title>
+  <link rel="stylesheet" href="../static/assets/css/ui.css">
+</head>
+<style>
         .popup {
             display: none; /* 기본적으로 숨김 */
             position: fixed;
@@ -151,7 +23,7 @@
         .popup-content {
             background-color: #222;
             padding: 20px;
-            width: 400px;
+            width: 420px;
             height: 320px;
             display: flex;
             flex-direction: column;
@@ -176,7 +48,7 @@
 
         /* 안내문구 스타일 */
         .popup-content .message {
-            color: #FF6F00;
+            color: #ff543d;
             font-size: 1.1em;
             margin-bottom: 20px;
             text-align: center;
@@ -186,7 +58,7 @@
             position: absolute;
             top: 10px;
             right: 10px;
-            color: #FF6F00;
+            color: #ff543d;
             font-size: 1.5em;
             cursor: pointer;
         }
@@ -195,32 +67,14 @@
             width: 24px;
             height: 24px;
             border: 4px solid #444;
-            border-top: 4px solid #FF6F00;
+            border-top: 4px solid #ff543d;
             border-radius: 50%;
             animation: spin 1s linear infinite;
         }
 
-        /* 내 이야기로 시작하기 버튼 */
-        .use-file-btn {
-            display: block;
-            margin: 40px auto;
-            padding: 10px 20px;
-            background-color: #FF6F00;
-            color: #fff;
-            font-size: 1.2em;
-            border: none;
-            border-radius: 8px;
-            cursor: pointer;
-            text-align: center;
-        }
-
-        .use-file-btn:hover {
-            background-color: #FF8F00;
-        }
-
         /* 파일 선택하기 버튼 */
         .select-file-btn {
-            background-color: #FF6F00;
+            background-color: #ff543d;
             color: #fff;
             border: none;
             padding: 10px 20px;
@@ -232,48 +86,70 @@
         }
 
         .select-file-btn:hover {
-            background-color: #FF8F00;
+            background-color: #ff543d;
         }
-    </style>
-</head>
+</style>
 <body>
-    <h1>이야기를 선택하세요</h1>
+  <!-- header -->
+  <header>
+    <h1>
+      <img src="../static/assets/images/logo.png" alt="">
+      <span>AI Runner</span>
+    </h1>
 
-    <div class="card-container">
+    <a href="/" class="home">첫 화면으로 돌아가기</a>
+  </header>
+  <!-- //header -->
+
+  <!-- main -->
+  <main class="index">
+    <p><strong>Story</strong>를 선택하세요</p>
+
+    <div class="items">
         {% for item in items %}
-            <div class="card" title="{{ item.title }}" onclick="location.href='/profile?bookId={{ item.bookId }}'">
-                <img src="{{ item.cover_image_url }}" alt="{{ item.plotSummary }}">
-                <div class="title-overlay">{{ item.title }}</div>
-            </div>
+            <a href="javascript:location.href='/profile?bookId={{ item.bookId }}';">
+                <img src="{{ item.cover_image_url }}" alt="{{ item.title }}">
+                <span class="btm-sec">
+                  <em>Play Story</em>
+                </span>
+                <span class="description">
+                  <span>{{ item.title }}</span>
+{#                  {{ item.plotSummary }}#}
+                    {{ item.plotSummary[:100] ~ ('...' if item.plotSummary|length > 100 else '') }}
+                </span>
+            </a>
         {% else %}
             <p style="text-align:center; width: 100%;">파일이 없습니다.</p>
         {% endfor %}
     </div>
 
-    <!-- 내 이야기로 시작하기 버튼 -->
-    <button class="use-file-btn" onclick="openPopup()">내 이야기로 시작하기</button>
 
-    <a href="/" class="back-link">← 첫 화면으로 돌아가기</a>
+    <!-- 내 이야기로 시작하기 버튼 -->
+    <div class="btn">
+      <button type="button" onclick="openPopup()"><span>내 이야기로 시작하기</span></button>
+    </div>
+
+    </main>
 
     <div class="popup" id="filePopup">
-    <div class="popup-content">
-        <!-- 안내문구 및 스피너 -->
-        <div class="message">
-            <p>이야기를 준비하는데 시간이 소요될 수 있습니다.</p>
+        <div class="popup-content">
+            <!-- 안내문구 및 스피너 -->
+            <div class="message">
+                <p>이야기를 준비하는데 시간이 소요될 수 있습니다.</p>
+            </div>
+            <input type="text" id="fileTitle" placeholder="제목을 입력하세요">
+
+            <!-- 파일 업로드 인풋 및 버튼 -->
+            <input type="file" id="fileInput" accept=".txt,.docx,.pdf" onchange="handleFileSelect(event)" style="display:none;">
+            <button class="select-file-btn" onclick="selectFile()">파일 선택하기</button>
+
+            <!-- 스피너 표시 -->
+            <div class="spinner" id="spinner" style="display:none;"></div>
+
+            <!-- 닫기 버튼 -->
+            <span class="close-btn" onclick="closePopup()">×</span>
         </div>
-        <input type="text" id="fileTitle" placeholder="제목을 입력하세요">
-        
-        <!-- 파일 업로드 인풋 및 버튼 -->
-        <input type="file" id="fileInput" accept=".txt,.docx,.pdf" onchange="handleFileSelect(event)" style="display:none;">
-        <button class="select-file-btn" onclick="selectFile()">파일 선택하기</button>
-        
-        <!-- 스피너 표시 -->
-        <div class="spinner" id="spinner" style="display:none;"></div>
-        
-        <!-- 닫기 버튼 -->
-        <span class="close-btn" onclick="closePopup()">×</span>
     </div>
-</div>
 
     <script>
         const textarea = document.getElementById('fileTitle');

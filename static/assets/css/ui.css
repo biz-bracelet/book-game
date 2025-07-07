@@ -1,11 +1,11 @@
 @charset "utf-8";
 
-@import "reset.css";
-@import "fonts.css";
+@import "./reset.css";
+@import "./fonts.css";
 
 body {
   font-family: "GmarketSans";
-  font-size: 12px;
+  /*font-size: 12px;*/
   font-weight: 300;
   color: #000;
   line-height: 1;
@@ -22,21 +22,50 @@ button {
 
 /* header */
 header {
+  position: relative;
   display: flex;
+  justify-content: space-between;
   align-items: center;
   height: 58px;
-  padding-left: 50px;
+  padding: 0 50px;
   background: #ff543d;
+  z-index: 100;
+}
+header h1 {
+  display: flex;
+  align-items: center;
+  gap: 15px;
 }
 header h1 span {
+  padding-top: 3px;
   font-size: 18px;
   font-weight: 500;
   color: #fff;
+}
+header .home {
+  position: relative;
+  display: inline-block;
+  padding-left: 30px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 20px;
+}
+header .home::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 20px;
+  height: 19px;
+  background: url(../images/icon_home.png) no-repeat 0 0;
 }
 
 /* main */
 main {
   height: calc(100vh - 58px);
+  background-repeat: no-repeat;
+  background-position: center center;
   background-color: #000;
 }
 
@@ -47,8 +76,6 @@ main {
   align-items: center;
   justify-content: center;
   background-image: url(../images/bg_intro.jpg);
-  background-repeat: no-repeat;
-  background-position: center center;
 }
 .intro .txt1 {
   font-size: 57px;
@@ -150,4 +177,359 @@ main {
   margin: 130px 0 140px;
   font-size: 28px;
   color: #fff;
+}
+
+/* index */
+.index {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+}
+.index::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url(../images/bg_intro.jpg) no-repeat center center;
+  filter: blur(3px);
+  z-index: 0;
+}
+.index > * {
+  z-index: 1;
+}
+.index p {
+  font-size: 64px;
+  color: #fff;
+  font-weight: 300;
+}
+.index p strong {
+  font-size: 66px;
+  font-weight: 700;
+  color: #ff543d;
+}
+.index .items {
+  display: flex;
+  gap: 0 16px;
+  margin-top: 100px;
+}
+.index .items a {
+  position: relative;
+  display: block;
+  width: 100%;
+}
+.index .items a img {
+  width: 188px;
+  height: 274px;
+  border-radius: 14px;
+}
+.index .items a .btm-sec {
+  display: none;
+  position: absolute;
+  bottom: -36px;
+  left: 0;
+  width: 100%;
+  height: 50px;
+  border-radius: 0 0 14px 14px;
+  font-size: 16px;
+  font-weight: 700;
+  color: #fff;
+  text-align: center;
+  line-height: 50px;
+  background: #ff543d;
+  z-index: 20;
+}
+.index .items a .btm-sec em {
+  padding-left: 28px;
+  background: url(../images/icon_play.png) no-repeat 0 center;
+}
+.index .items a .description {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: calc(100% - 40px);
+  height: 100%;
+  padding: 0 20px;
+  /* display: flex; */
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  font-size: 12px;
+  color: #fff;
+  line-height: 1.4;
+  z-index: 20;
+}
+.index .items a .description span {
+  padding-bottom: 20px;
+  font-size: 20px;
+  font-weight: 500;
+}
+.index .items a:hover {
+  z-index: 10;
+}
+.index .items a:hover {
+  transform: scale(1.4, 1.2);
+}
+.index .items a:hover img {
+  position: relative;
+  display: inline-block;
+  border: solid #ff543d;
+  border-width: 4px 4px 0 4px;
+}
+.index .items a:hover::after {
+  content: "";
+  position: absolute;
+  top: 4px;
+  right: 4px;
+  left: 4px;
+  width: calc(100% - 8px);
+  height: calc(100% - 4px);
+  border-radius: 10px;
+  background: rgba(0, 0, 0, .8);
+  z-index: 10;
+}
+.index .items a:hover .btm-sec {
+  display: block;
+  /* transform: scale(1); */
+}
+.index .items a:hover .description {
+  display: flex;
+}
+.index .btn {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(410px, -200px);
+}
+.index .btn button {
+  display: inline-block;
+  width: 210px;
+  height: 40px;
+  border-radius: 20px;
+  background: #ff543d;
+}
+.index .btn button span {
+  padding-right: 26px;
+  font-size: 15px;
+  font-weight: 700;
+  color: #fff;
+  background: url(../images/icon_my.png) no-repeat right center;
+}
+
+
+@media screen and (max-width: 768px) {
+
+  body {
+    padding-top: 8.056vw;
+    font-size: 12px;
+  }    
+
+  /* header */
+  header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    /* height: 8.056vw; */
+    height: 15.278vw;
+    padding: 0 8.056vw;
+  }
+  header h1 {
+    gap: 2.083vw;
+  }
+  header h1 img {
+    /* width: 12.917vw; */
+  }
+  header h1 span {
+    padding-top: 0.417vw;
+    font-size: 5vw;
+  }
+  header .home {
+    padding-left: 0;
+    font-size: 0;
+  }
+  header .home::before {
+    top: 2px;
+    left: initial;
+    right: 0;
+    background-size: 100%;
+  }
+
+  /* main */
+  main {
+    height: auto;
+    min-height: calc(100vh - 8.056vw);
+    background-color: #000;
+  }
+
+  /* intro */
+  .intro {
+    background-size: auto contain;
+  }
+  .intro .txt1 {
+    font-size: 7.222vw;
+  }
+  .intro .txt1 span {
+    font-size: 13.056vw;
+  }
+  .intro .txt2 {
+    margin: 18.056vw 0 19.444vw;
+    font-size: 3.889vw;
+  }
+  .intro .btn button {
+    width: 63.056vw;
+    height: 10.278vw;
+    border-radius: 5.139vw;
+    font-size: 5.139vw;
+  }
+
+  /* video_layer */
+  .video_layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    font-size: 0;
+    background: #000;
+  }
+  .video_layer video {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: auto;
+    height: auto;
+    transform: translate(-50%, -50%);
+  }
+
+  .video_layer .txt_area .txt1 {
+    font-size: 7.222vw;
+  }
+  .video_layer .txt_area .txt1 span {
+    font-size: 13.056vw;
+  }
+  .video_layer .txt_area .txt2 {
+    margin: 18.056vw 0 19.444vw;
+    font-size: 3.889vw;
+  }
+
+  /* index */
+  .index {
+    display: block;
+    padding: 16.6667vw 0;
+  }
+  .index::before {
+    background-size: contain 100%;
+  }
+  .index p {
+    position: relative;
+    font-size: 8.8889vw;
+    text-align: center;
+  }
+  .index p strong {
+    font-size: 9.1667vw;
+  }
+  .index .items {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    gap: 2.2222vw 2.2222vw;
+    margin-top: 13.8889vw;
+    padding: 0 5.5556vw;
+  }
+  .index .items a {
+    flex-basis: calc(100% / 2 - 2.222vw);
+  }
+  .index .items a img {
+    width: 100%;
+    height: auto;
+    aspect-ratio: 3 / 4;;
+    border-radius: 2.2222vw;
+  }
+  .index .items a .btm-sec {
+    display: none;
+    position: absolute;
+    bottom: -36px;
+    left: 0;
+    width: 100%;
+    height: 50px;
+    border-radius: 0 0 14px 14px;
+    font-size: 16px;
+    font-weight: 700;
+    color: #fff;
+    text-align: center;
+    line-height: 50px;
+    background: #ff543d;
+    z-index: 20;
+  }
+  .index .items a .btm-sec em {
+    padding-left: 28px;
+    background: url(../images/icon_play.png) no-repeat 0 center;
+  }
+  .index .items a .description {
+    display: none;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: calc(100% - 40px);
+    height: 100%;
+    padding: 0 20px;
+    /* display: flex; */
+    justify-content: center;
+    align-items: center;
+    flex-direction: column;
+    font-size: 12px;
+    color: #fff;
+    line-height: 1.4;
+    z-index: 20;
+  }
+  .index .items a .description span {
+    padding-bottom: 20px;
+    font-size: 20px;
+    font-weight: 500;
+  }
+  .index .items a:hover {
+    z-index: 10;
+  }
+  .index .items a:hover {
+    transform: scale(1, 1);
+  }
+  .index .items a:hover img {
+    position: relative;
+    display: inline-block;
+    border: solid #ff543d;
+    border-width: 0;
+  }
+  .index .items a:hover::after {
+    display: none;
+  }
+  .index .items a:hover .btm-sec {
+    display: none;
+  }
+  .index .items a:hover .description {
+    display: none;
+  }
+  .index .btn {
+    position: static;
+    top: auto;
+    left: auto;
+    transform: translate(0);
+    margin-top: 6.9444vw;
+    text-align: center;
+  }
+  .index .btn button {
+    width: 83.333vw;
+    height: 11.111vw;
+    border-radius: 16.667vw;
+  }
+  .index .btn button span {
+    padding-right: 26px;
+    font-size: 4.722vw;
+    background-size: auto 18px;
+  }
+
 }

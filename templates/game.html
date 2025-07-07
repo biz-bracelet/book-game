@@ -1,9 +1,10 @@
 <!doctype html>
 <html lang="ko">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>AI Runner</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Chapter:Me</title>
+  <link rel="stylesheet" href="../static/assets/css/ui.css">
     <style>
         body {
             margin: 0; padding: 0; height: 100vh;
@@ -11,13 +12,6 @@
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
             background-color: #121212;
             color: #e0e0e0;
-        }
-        header {
-            padding: 16px 24px;
-            background-color: #1f1f1f;
-            font-size: 1.3em;
-            border-bottom: 2px solid #ff5532;
-            flex-shrink: 0;
         }
         main {
             flex: 1;
@@ -175,13 +169,22 @@
     </style>
 </head>
 <body>
-    <header>
-        {{ title }}
-    </header>
+{#    <header>#}
+{#        {{ title }}#}
+{#    </header>#}
+     <!-- header -->
+  <header>
+    <h1>
+      <img src="../static/assets/images/logo.png" alt="">
+      <span>AI Runner</span>
+    </h1>
+
+    <a href="/" class="home">첫 화면으로 돌아가기</a>
+  </header>
+  <!-- //header -->
     <main>
         <section class="chat">
             <div class="chat-messages" id="chat-messages">
-{#                <div class="chat-bg-overlay" id="chat-bg-overlay">ㅇㅇㅇㅇㅇ</div>#}
                 <div class="chat-log" id="chat-log"></div>
                 {% for role, msg in messages %}
                     <div class="chat-message {{ 'user' if role=='User' else 'bot' }}">
@@ -194,7 +197,6 @@
                     </div>
                 {% endfor %}
                 </div>
-            </div>
             <form id="chat-form" method="post" autocomplete="off">
                 <!-- 이미지 컨테이너를 맨 앞에 배치 -->
                 <div id="character-preview">
@@ -220,7 +222,7 @@
 
         </section>
     </main>
-    <a href="{{ url_for('list_files') }}" class="back">← 파일 목록으로 돌아가기</a>
+{#    <a href="{{ url_for('list_files') }}" class="back">← 파일 목록으로 돌아가기</a>#}
 
 <script>
     const textarea = document.getElementById('message');
