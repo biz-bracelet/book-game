@@ -6,7 +6,7 @@
   <title>Chapter:Me</title>
   <link rel="stylesheet" href="../static/assets/css/ui.css">
     <style>
-        body {
+body {
             margin: 0; padding: 0; height: 100vh;
             display: flex; flex-direction: column;
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -40,8 +40,11 @@
             background-repeat: no-repeat;
             background-position: center;
         }
+
         .chat-log {
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
         .example {
             display: inline-block;               /* 텍스트 길이만큼만 영역 */
@@ -70,12 +73,25 @@
             word-break: break-word;
         }
         .chat-message.user {
-            color: #ff5532;
+            font-weight: bolder;
+            color: #333332;
             text-align: right;
             z-index: 2;
+            /* 신규 css */
+            background-color: #ffffffcc;
+            padding: 16px 20px;
+            border-radius: 18px 18px 0px 18px;
+            font-size: 1em;
+            word-break: break-word;
+            display: inline-block;
+            max-width: 70%;
+            min-width: 48px;
+            margin-left: auto;   /* 우측 정렬 */
+            margin-right: 0;
+            box-sizing: border-box;
         }
         .chat-message.bot {
-            color: #ccc;
+            color: #e0e0e0;
             text-align: left;
             z-index: 2;
         }
