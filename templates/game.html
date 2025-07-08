@@ -44,10 +44,24 @@
             position: relative;
         }
         .example {
-            position: flex;
-            background-color: rgba(205, 0, 48, 0.3);
-            background-size: auto
+            display: inline-block;               /* 텍스트 길이만큼만 영역 */
+            background-color: #E04435;           /* 배경색으로 버튼 느낌 */
+            border: none;
+            padding: 6px 10px;                   /* 최소한의 여백으로 버튼 느낌 유지 */
+            cursor: pointer;
+            border-radius: 6px;                  /* 적당한 라운드 */
+            color: white;
+            font-size: 1em;
+            line-height: 1.2;
+            transition: background-color 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1); /* 버튼처럼 떠보이는 느낌 */
+            margin-bottom: 8px;
         }
+
+        .example:hover {
+            background-color: #C63C2F;           /* hover 효과로 버튼처럼 보이게 */
+        }
+
         .chat-message {
             position: relative;
             z-index: 2;
@@ -249,6 +263,16 @@
             .replace(/\n/g, '<br>');
     }
 
+    // 줄바꿈을 이쁘게 처리: 연속 줄바꿈은 <br><br>로, 단일 줄바꿈은 <br>로 변환
+    function prettyFormatMessage(msg) {
+        // 3개 이상 연속 줄바꿈은 <br><br>로, 2개는 <br><br>, 1개는 <br>
+        return msg
+            .replace(/\n{3,}/g, '<br><br>')
+            .replace(/\n{2}/g, '<br><br>')
+            .replace(/\n/g, '<br>')
+            .replace(/\*/g, '');
+    }
+
     function updateTextareaHeight() {
         textarea.style.height = 'auto';
         textarea.style.height = textarea.scrollHeight + 'px';
@@ -304,6 +328,34 @@
             .replace(/[018]/g, c =>
                 (c ^ crypto.getRandomValues(new Uint8Array(1))[0] & 15 >> c / 4).toString(16)
             );
+    }
+
+    function attachExampleClickHandlers(parentDiv) {
+        // parentDiv 내의 모든 div.example 요소를 찾습니다.
+        const exampleDivs = parentDiv.querySelectorAll('.example');
+        exampleDivs.forEach(exampleDiv => {
+            // 이미 클릭 리스너가 추가되지 않았는지 확인 (중복 방지)
+            if (!exampleDiv.dataset.hasClickListener) {
+                exampleDiv.dataset.hasClickListener = 'true'; // 플래그 설정
+                exampleDiv.style.cursor = 'pointer'; // 클릭 가능한 것처럼 보이게 커서 변경
+                exampleDiv.onclick = async () => {
+                    // 클릭된 .example div가 속한 메시지 버블 내의 모든 .example div를 찾습니다.
+                    const currentMessageExamples = exampleDiv.closest('.chat-message.bot').querySelectorAll('.example');
+                    currentMessageExamples.forEach(div => {
+                        div.style.pointerEvents = 'none'; // 클릭 비활성화
+                        div.style.opacity = '0.5';        // 흐릿하게 표시
+                        div.style.cursor = 'default';     // 마우스 커서 기본으로 변경
+                    });
+
+                    let choiceText = exampleDiv.textContent;
+                    // 텍스트의 끝에 있는 '추천'과 그 주변의 공백을 제거합니다.
+                    choiceText = choiceText.replace(/\s*추천\s*$/, '').trim(); 
+                    choiceText = choiceText.replace(/^\d+\.\s*/, '').trim();
+
+                    await handleChoiceSelection(choiceText);
+                };
+            }
+        });
     }
 
     // 페이지 로드 시 자동으로 "게임 시작" 메시지 전송
@@ -370,16 +422,6 @@
 
         let botResponse = "";
 
-        // 줄바꿈을 이쁘게 처리: 연속 줄바꿈은 <br><br>로, 단일 줄바꿈은 <br>로 변환
-        function prettyFormatMessage(msg) {
-            // 3개 이상 연속 줄바꿈은 <br><br>로, 2개는 <br><br>, 1개는 <br>
-            return msg
-                .replace(/\n{3,}/g, '<br><br>')
-                .replace(/\n{2}/g, '<br><br>')
-                .replace(/\n/g, '<br>')
-                .replace(/\*/g, '');
-        }
-
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -400,6 +442,9 @@
         // 최종 출력 및 커서 제거
         botContentSpan.innerHTML = prettyFormatMessage(botResponse);
         chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        attachExampleClickHandlers(botContentSpan);
+
 
         if (episodeChanged) {
             (async () => {
@@ -426,9 +471,117 @@
                 }
             })();
         }
+        
+        textarea.disabled = false;
         sendBtn.disabled = false;
-        isSubmitting = false;
         textarea.focus();
+        isSubmitting = false;
+    }
+
+    async function handleChoiceSelection(choiceText) {
+        // choicesContainer.remove()는 이제 attachExampleClickHandlers 내부에서 처리됩니다.
+
+        let userChoiceDiv = document.createElement('div');
+        userChoiceDiv.className = 'chat-message user';
+        // 사용자의 선택은 이스케이프 처리
+        userChoiceDiv.innerHTML = `<span class="msg-content">${escapeHtml(prettyFormatMessage(choiceText))}</span>`;
+        chatLog.appendChild(userChoiceDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        isSubmitting = true;
+        sendBtn.disabled = true;
+        textarea.disabled = true;
+
+        const bodyForNextTurn = {
+            message: choiceText,
+            sessionId: sessionId
+        };
+
+        let newBotDiv = document.createElement('div');
+        newBotDiv.className = 'chat-message bot';
+        let newBotContentSpan = document.createElement('span');
+        newBotContentSpan.className = 'msg-content';
+        newBotDiv.appendChild(newBotContentSpan);
+        chatLog.appendChild(newBotDiv);
+
+        const response = await fetch('/chat/stream', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(bodyForNextTurn)
+        });
+
+        if (!response.body) {
+            const errorDiv = document.createElement('div');
+            errorDiv.className = 'chat-message bot';
+            errorDiv.textContent = "[오류] 서버가 스트림을 지원하지 않습니다.";
+            chatLog.appendChild(errorDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+            sendBtn.disabled = false;
+            textarea.disabled = false;
+            isSubmitting = false;
+            textarea.focus();
+            return;
+        }
+
+        let newBotResponse = "";
+        episodeChanged = false;
+
+        const reader = response.body.getReader();
+        const decoder = new TextDecoder();
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+
+            let chunk = decoder.decode(value);
+            chunk = chunk.replace(/^data:\s*/gm, '');
+            if (chunk === "" || chunk === "[DONE]") continue;
+
+            newBotResponse += chunk;
+            if (newBotResponse.includes("[NEW_PLACE]")) {
+                episodeChanged = true;
+                newBotResponse = newBotResponse.replace(/\[NEW_PLACE\]/g, "");
+            }
+            newBotContentSpan.innerHTML = prettyFormatMessage(newBotResponse) + '<span style="opacity:0.7;">▌</span>';
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+
+        // 스트림 완료 후 최종 커서 제거
+        newBotContentSpan.innerHTML = prettyFormatMessage(newBotResponse);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+
+        // AI 응답에 포함된 .example 클래스 div에 클릭 이벤트 리스너 추가
+        attachExampleClickHandlers(newBotContentSpan);
+
+        if (episodeChanged) {
+            (async () => {
+                try {
+                    const imgRes = await fetch("/background_generate", {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ place: newBotResponse }),
+                    });
+
+                    const imgData = await imgRes.json();
+
+                    if (imgData.error) throw new Error(imgData.error);
+                    if (!imgData.images || !Array.isArray(imgData.images)) {
+                        throw new Error("이미지를 받지 못했습니다.");
+                    }
+
+                    const bgOverlay = document.getElementById("chat-messages");
+                    bgOverlay.style.backgroundImage = `linear-gradient(rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.7)), url('data:image/png;base64,${imgData.images[0]}')`;
+                } catch (err) {
+                    console.error("배경 이미지 생성 오류:", err.message);
+                }
+            })();
+        }
+
+        // 응답 처리 완료 후 입력 필드 및 버튼 활성화
+        textarea.disabled = false;
+        sendBtn.disabled = false;
+        textarea.focus();
+        isSubmitting = false;
     }
 </script>
 
