@@ -114,8 +114,8 @@
                 </span>
                 <span class="description">
                   <span>{{ item.title }}</span>
-{#                  {{ item.plotSummary }}#}
-                    {{ item.plotSummary[:100] ~ ('...' if item.plotSummary|length > 100 else '') }}
+{#                  {{ item.bookInfo }}#}
+                    {{ item.bookInfo[:100] ~ ('...' if item.bookInfo|length > 100 else '') }}
                 </span>
             </a>
         {% else %}

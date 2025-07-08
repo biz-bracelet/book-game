@@ -29,7 +29,7 @@ s3_client = boto3.client('s3')
 dynamodb_resource = boto3.resource('dynamodb')
 BOOK_META_DATA_TABLE_NAME = 'BookMetaDataTable'
 book_meta_data_table = dynamodb_resource.Table(BOOK_META_DATA_TABLE_NAME)
-SOURCE_BUCKET_NAME = os.getenv('S3_SOURCE_BUCKET_NAME', 'your-default-book-covers-bucket')
+SOURCE_BUCKET_NAME = os.getenv('arn:aws:s3:::biz-bracelet-book-game-raw-books', 'biz-bracelet-book-game-raw-books')
 BOOK_COVERS_FOLDER_PREFIX = 'book-covers/'
 
 BOOK_FOLDER = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'books')
@@ -223,8 +223,13 @@ Develop major episodes based on scenes from the summary to use throughout the ga
 Once at the beginning of the conversation, Present a prologue that explains the basic background and world overview.
 Addressing the player as "You" in the second-person perspective.
 After the prologue, show the first episode of the plot from the summary and ask the player what they want to do next.
-Provide examples of appropriate actions to guide the player.
 Prologue and the first episode should not be presented except when the game starts.
+Episode title and Prologue title, Epilogue title should be in <h1> tag.
+
+Provide numbered examples of appropriate actions to guide the player. Each examples should be in div class "example" tag.
+And in the examples, if the original storyline exist, mark it at the end of the example with "<추천>" in font color yellow.
+Examples should be placed under the line of instruction, saying the player and choose or type the action.
+the instruction should be in font type bold.
 
 When the player responds, continue the story based on the world you have created.  
 The session continues until the story reaches its conclusion.  
@@ -235,6 +240,8 @@ Avoid violent or explicit content.
 IMPORTANT:  
 When the place where the story stays changed, insert the special token [NEW_PLACE] in the response.  
 This token will be used by the system to detect place changes and trigger image generation.
+If the user needs to correct information, they will do so in the format [[INFORMATION]].
+Don't use special letters other than listed follow : ',.-:?!~"()[]<>
 
 The entire session should be conducted in Korean unless otherwise instructed.
 

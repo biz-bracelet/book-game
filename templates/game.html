@@ -43,16 +43,10 @@
         .chat-log {
             position: relative;
         }
-        .chat-log::before {
-            content: "";
-            position: absolute;
-            top: -20px;
-            bottom: -30px;
-            left: -20px;
-            right: -20px;
-            {#background-color: rgba(0, 0, 0, 0.7);#}
-            z-index: 0;
-            pointer-events: none;
+        .example {
+            position: flex;
+            background-color: rgba(205, 0, 48, 0.3);
+            background-size: auto
         }
         .chat-message {
             position: relative;
@@ -222,7 +216,6 @@
 
         </section>
     </main>
-{#    <a href="{{ url_for('list_files') }}" class="back">← 파일 목록으로 돌아가기</a>#}
 
 <script>
     const textarea = document.getElementById('message');
@@ -380,10 +373,11 @@
         // 줄바꿈을 이쁘게 처리: 연속 줄바꿈은 <br><br>로, 단일 줄바꿈은 <br>로 변환
         function prettyFormatMessage(msg) {
             // 3개 이상 연속 줄바꿈은 <br><br>로, 2개는 <br><br>, 1개는 <br>
-            return escapeHtml(msg)
+            return msg
                 .replace(/\n{3,}/g, '<br><br>')
                 .replace(/\n{2}/g, '<br><br>')
-                .replace(/\n/g, '<br>');
+                .replace(/\n/g, '<br>')
+                .replace(/\*/g, '');
         }
 
         while (true) {
