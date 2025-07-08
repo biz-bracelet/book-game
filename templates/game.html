@@ -351,6 +351,7 @@
                     // 텍스트의 끝에 있는 '추천'과 그 주변의 공백을 제거합니다.
                     choiceText = choiceText.replace(/\s*추천\s*$/, '').trim(); 
                     choiceText = choiceText.replace(/^\d+\.\s*/, '').trim();
+                    choiceText = "당신: " + choiceText
 
                     await handleChoiceSelection(choiceText);
                 };
