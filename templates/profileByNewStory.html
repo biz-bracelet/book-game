@@ -393,7 +393,7 @@
         const imgRes = await fetch("/profile_image_generate", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ character_summary: summary }),
+          body: JSON.stringify({ character_info: summary }),
         });
 
         const imgData = await imgRes.json();
